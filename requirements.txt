@@ -1,0 +1,9 @@
+colorama
+datetime
+keyboard
+plyer
+pyfiglet
+python-osc
+requests
+UnityPy
+vrchatapi
