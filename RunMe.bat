@@ -42,7 +42,7 @@ for /F %%i in (requirements.txt) do (
 echo All Python dependencies have been successfully installed.
 
 rem Launch the Python script
-python VRChatScanner.py
+python VRCST.py
 
 rem Pause to display results (you can remove this if you wish)
 pause
