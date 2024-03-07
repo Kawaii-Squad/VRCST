@@ -237,7 +237,7 @@ def fancy_welcome(version, developers=None):
 def update_files():
     # Dictionnaire des fichiers à mettre à jour
     files_to_update = {
-        "VRChatScanner.py": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/VRChatScanner.py",
+        "VRCST.py": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/VRCST.py",
         "RunMe.bat": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/RunMe.bat",
         "requirements.txt": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/requirements.txt",
         "README.md": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/README.md"
