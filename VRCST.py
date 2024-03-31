@@ -93,7 +93,7 @@ def get_display_name():
 # Définition du chemin local du script
 local_script_path = "VRCST.py"
 user_id_file = 'LocalDB/temps/user_id.bin'  # Nom du fichier pour enregistrer le user ID
-user_agent = 'VRCST/1.1.0 (contact: @kaichisama)'
+user_agent = 'VRCST/1.0.0 (Windows)'
 auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
 friendlist = 'LocalDB/infos/friendslist.json'
 auth_cookie = get_auth_cookie(auth_cookie_path)
