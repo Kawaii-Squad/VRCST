@@ -98,9 +98,6 @@ auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
 friendlist = 'LocalDB/infos/friendslist.json'
 auth_cookie = get_auth_cookie(auth_cookie_path)
 displayName = get_display_name()
-# Configuration VRChat
-IP_VRCHAT = "127.0.0.1"  # Adresse IP de votre instance VRChat
-PORT_VRCHAT_SEND = 9000  # Port d'envoi OSC de VRChat
 
 #INTERNAL FONCTIONS
 def create_directory(directory):
@@ -361,26 +358,6 @@ def perform_login():
 
         # Enregistrez le User ID après la connexion réussie
         save_vrchat_user_id()
-
-#VRC-OSC
-def send_osc_message(address, *args):
-    client = udp_client.SimpleUDPClient(IP_VRCHAT, PORT_VRCHAT_SEND)
-    client.send_message(address, args)
-
-def advertise_kawaii_gang():
-    kawaii_frames = [
-        "🌈 Thanks for using Kawaii Squad Script 🌸",
-        "🌟 Discover amazing assets with us! ✨",
-        "🎉 Visit our community for free leaks! 🎊",
-        "🌈 Join Kawaii Squad Free! 🌸"
-    ]
-
-    # Adresse OSC pour envoyer un message au chatbox de VRChat
-    chatbox_address = "/chatbox/input"
-
-    for frame in kawaii_frames:
-        send_osc_message(chatbox_address, frame)
-        time.sleep(2)
 
 #UserID Saver
 def save_vrchat_user_id():
@@ -753,7 +730,6 @@ def local_database_menu():
         else:
             print("Invalid option, please try again.")
 
-
 #fait un RickRoll
 
 def rickroll():
@@ -762,6 +738,5 @@ def rickroll():
 
 update_files()
 fancy_welcome(version)
-advertise_kawaii_gang()
 login_and_save_auth_cookie()
 main_menu()
