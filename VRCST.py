@@ -16,6 +16,7 @@ from vrchatapi.configuration import Configuration
 from colorama import Fore, Style, init
 from plyer import notification
 from pythonosc import udp_client
+from vrchatapi.api import WorldsApi
 import threading, ctypes
 
 #Notification Windows
@@ -54,6 +55,7 @@ def get_auth_cookie(auth_cookie_path):
                 return None
     else:
         return None
+
 #Username Saver
 def get_display_name():
     # Check if user_id_file exists
@@ -93,7 +95,7 @@ def get_display_name():
 # Définition du chemin local du script
 local_script_path = "VRCST.py"
 user_id_file = 'LocalDB/temps/user_id.bin'  # Nom du fichier pour enregistrer le user ID
-user_agent = 'VRCST/1.0.0 (Windows)'
+user_agent = 'VRCST/1.1.0 vrcststudio@gmail.com'
 auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
 friendlist = 'LocalDB/infos/friendslist.json'
 auth_cookie = get_auth_cookie(auth_cookie_path)
@@ -409,7 +411,7 @@ def download_entity_image(entity_id, entity_type):
                 return
 
             try:
-                headers = {'User-Agent': 'VRC Scanner Tool / Kawaii Squad'}
+                headers = {"User-Agent": user_agent}
                 response = requests.get(image_url, headers=headers)
                 response.raise_for_status()
 
