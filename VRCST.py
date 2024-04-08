@@ -19,6 +19,7 @@ from pythonosc import udp_client
 from vrchatapi.api import WorldsApi
 import threading, ctypes
 
+
 #Notification Windows
 def show_notification(title, message):
     notification.notify(
@@ -301,7 +302,7 @@ def validate_auth_cookie(auth_cookie, current_user=None):
     headers = {
         "Cookie": f"amplitude_id_a750df50d11f21f712262cbd4c0bab37vrchat.com=string; auth={auth_cookie}",
         "User-Agent": user_agent  # Assuming user_agent is defined elsewhere
-    }
+    } 
 
     print(f"Sending test request to {url} with headers: {headers}")
     response = requests.get(url, headers=headers)
@@ -670,9 +671,10 @@ def launch_friendlistsaver():
 #GUI
 def main_menu():
     while True:
-        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisama.{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTMAGENTA_EX}Join : https://discord.gg/7KprcpxhEH{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / >_Unknown User{Style.RESET_ALL}")
+        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisamaks.{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Join : https://t.me/+uIv0MsARg4oyZTBh{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / {Style.RESET_ALL}")
+        print(f"{Fore.LIGHTMAGENTA_EX}By the Way i get discord ban so Kawaii Squad Discord is DEAD THE END so join the Telegram group / {Style.RESET_ALL}")
         print(f"\n{Fore.GREEN}♥ Kaichi-Sama Menu UwU ♥{Style.RESET_ALL}:")
         print("1. Local Database")
         print(f"2. Network Database {Fore.RED}Not Finished Need an other Dev for fix it Thanks <3{Style.RESET_ALL}")
@@ -733,12 +735,11 @@ def local_database_menu():
             print("Invalid option, please try again.")
 
 #fait un RickRoll
-
 def rickroll():
     url = 'https://youtu.be/a3Z7zEc7AXQ'
     wb.open(url)
 
-update_files()
+#update_files()
 fancy_welcome(version)
-login_and_save_auth_cookie()
+#login_and_save_auth_cookie()
 main_menu()
