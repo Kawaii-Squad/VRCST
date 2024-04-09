@@ -30,8 +30,6 @@ We'd love to hear from you! If you encounter any issues or have suggestions for 
 
 𝐖𝐞𝐛𝐬𝐢𝐭𝐞 : wait a fkg second lmao
 
-Wallpaper : [Steam Community Wallpaper](https://steamcommunity.com/sharedfiles/filedetails/?id=2981905773)
-
 [Telegram](https://t.me/+uIv0MsARg4oyZTBh)
 
 Thank you for using VRC Scanner Tool!
