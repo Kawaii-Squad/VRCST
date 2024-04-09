@@ -2,7 +2,7 @@
 # VRC Scanner Tool v1.1.0 Release #
 ###############################
 
-We're excited to announce the release of VRC Scanner Tool! This tool allows you to create and manage a local database for VRChat content. It's perfect for VRChat enthusiasts and creators who want to organize their content.
+We're excited to announce the release of VRC Scanner Tool! This tool allows you to create and manage a local database for VRChat content. It's perfect for VRChat enthusiasts and creators who want to organize their content. Please note that this tool is solely for educational purposes and we do not condone avatar or world theft.
 
 ## Installation Instructions ##
 
