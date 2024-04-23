@@ -739,7 +739,7 @@ def rickroll():
     url = 'https://youtu.be/a3Z7zEc7AXQ'
     wb.open(url)
 
-#update_files()
+update_files()
 fancy_welcome(version)
 #login_and_save_auth_cookie()
 main_menu()
