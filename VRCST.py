@@ -671,8 +671,9 @@ def launch_friendlistsaver():
 #GUI
 def main_menu():
     while True:
-        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisamaks.{Style.RESET_ALL}")
+        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisama.{Style.RESET_ALL}")
         print(f"{Fore.LIGHTMAGENTA_EX}Join : https://t.me/+uIv0MsARg4oyZTBh{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Join : https://discord.gg/RPC8x2ChVP{Style.RESET_ALL}")
         print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / {Style.RESET_ALL}")
         print(f"{Fore.LIGHTMAGENTA_EX}By the Way i get discord ban so Kawaii Squad Discord is DEAD THE END so join the Telegram group / {Style.RESET_ALL}")
         print(f"\n{Fore.GREEN}♥ Kaichi-Sama Menu UwU ♥{Style.RESET_ALL}:")
