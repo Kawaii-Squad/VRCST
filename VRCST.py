@@ -98,7 +98,7 @@ def get_display_name():
 
 local_script_path = "VRCST.py"
 user_id_file = 'LocalDB/temps/user_id.bin'
-user_agent = 'VRC Scanner Tool / Kawaii Squad Studio'
+user_agent = 'VRCST / Kawaii Squad Studio'
 auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
 friendlist = 'LocalDB/infos/friendslist.json'
 auth_cookie = get_auth_cookie(auth_cookie_path)
