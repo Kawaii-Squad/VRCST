@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import pygame
 import os
 import re
 import sys
@@ -758,6 +758,46 @@ def rickroll():
     url = 'https://www.youtube.com/watch?v=0wpvkIkAkbk&list=RDMM'
     wb.open(url)
 
+def play_default_music():
+    try:
+        # Initialisation de pygame
+        pygame.init()
+        
+        # Chemin relatif vers le fichier audio par défaut
+        script_directory = os.path.dirname(__file__)
+        default_music_path = os.path.join(script_directory, 'Dependencies', 'RIP_MY_AVI Kaichi-Sama.mp3')
+        
+        # Vérification si le fichier existe
+        if not os.path.exists(default_music_path):
+            print(f"File {default_music_path} not found.")
+            return
+        
+        # Initialisation du lecteur audio
+        pygame.mixer.init()
+        
+        # Chargement du fichier audio
+        pygame.mixer.music.load(default_music_path)
+        
+        # Lecture de la musique en boucle (-1 indique une lecture en boucle)
+        pygame.mixer.music.play(loops=-1)
+        
+        print(f"Playing default music from {default_music_path}. Press Ctrl+C to stop.")
+        
+        # Attente jusqu'à ce que l'utilisateur arrête manuellement
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)  # Attente pour réduire l'utilisation du processeur
+        
+    except KeyboardInterrupt:
+        pygame.mixer.music.stop()
+        pygame.mixer.quit()
+        print("\nMusic playback stopped.")
+    except Exception as e:
+        print(f"Error during music playback: {e}")
+    finally:
+        pygame.quit()
+
+music_thread = threading.Thread(target=play_default_music)
+music_thread.start()
 update_files()
 fancy_welcome(version)
 advertise_kawaii_gang()
