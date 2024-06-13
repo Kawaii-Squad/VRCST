@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 import sys
@@ -182,9 +184,9 @@ def fancy_welcome(version, developers=None):
     thank_you_text = "Thank you for using the Kawaii VRC Scanner Tool"
 
     version_box = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘                                    Version: {version:<}                                â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║                                    Version: {version:<}                                ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
 """
 
     print(welcome_text)
@@ -285,13 +287,12 @@ def perform_login():
     )
 
     with vrchatapi.ApiClient(configuration) as api_client:
-        api_client.user_agent = "MyProject/1.0 my@email.com"
+        api_client.user_agent = user_agent
         auth_api = authentication_api.AuthenticationApi(api_client)
 
         try:
             current_user = auth_api.get_current_user()
             print("Logged in as:", current_user.display_name)
-            return current_user
         except UnauthorizedException as e:
             if e.status == 200:
                 if "Email 2 Factor Authentication" in e.reason:
@@ -300,14 +301,14 @@ def perform_login():
                     auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(input("2FA Code: ")))
                 current_user = auth_api.get_current_user()
                 print("Logged in as:", current_user.display_name)
-                return current_user
             else:
                 print("Exception when calling API:", e)
         except vrchatapi.ApiException as e:
             print("Exception when calling API:", e)
+            return
 
         print("\033[92mLogged in as:", current_user.display_name + "\033[0m")
-        show_notification('ConnectÃ© avec SuccÃ¨s', 'L\'utilisateur est connectÃ© avec succÃ¨s.')
+        show_notification('Connected Successfully', 'User has successfully logged in.')
         cookies = api_client.rest_client.cookie_jar
         mock_request_object = Request(url="https://api.vrchat.cloud/api/1/auth/user", method="GET")
         cookies.add_cookie_header(mock_request_object)
@@ -351,7 +352,7 @@ def save_vrchat_user_id():
         user_info = response.json()
         user_id = user_info.get('id')
 
-        with open(os.path.join(user_id_file), 'wb') as file:
+        with open(user_id_file, 'wb') as file:
             file.write(user_id.encode('utf-8'))
 
         print("User ID successfully saved in the logs directory.")
@@ -406,7 +407,7 @@ def download_entity_image(entity_id, entity_type):
     logging.warning(f"Entity ID {entity_id} was not found in {file_path}")
 
 def get_info_id(id_, id_type):
-    url = f"https://api.vrchat.cloud/api/1/image/{'avatars' if id_type == 'VRCA' else 'worlds'}/{id_}" if id_type in ['VRCA', 'VRCW'] else None
+    url = f"https://api.vrchat.cloud/api/1/{'avatars' if id_type == 'VRCA' else 'worlds'}/{id_}" if id_type in ['VRCA', 'VRCW'] else None
 
     if not url:
         print(f"Unsupported ID type: {id_type}")
@@ -533,7 +534,8 @@ def start_the_logger():
 
                                     if info:
                                         save_json_data(info_path, info)
-                                        download_entity_image(blueprint_id, entity_type)
+                                        if "imageUrl" in info:
+                                            download_entity_image(blueprint_id, entity_type)
 
                                 elif os.path.exists(target_path):
                                     print(f"{datetime.datetime.now()} - {Fore.RED}{entity_type} Already Exists: {blueprint_id}{Style.RESET_ALL}")
@@ -638,6 +640,10 @@ def launch_friendlistsaver():
     except Exception as e:
         print(f"An error occurred: {e}")
 
+# Add Network_database_menu function
+def Network_database_menu():
+    print("Network Database is not finished and needs another developer to fix it. Thanks <3")
+
 # GUI
 def main_menu():
     while True:
@@ -707,7 +713,7 @@ def local_database_menu():
             print("Invalid option, please try again.")
 
 def rickroll():
-    url = 'https://youtu.be/a3Z7zEc7AXQ'
+    url = 'https://www.youtube.com/watch?v=0wpvkIkAkbk&list=RDMM'
     wb.open(url)
 
 update_files()
