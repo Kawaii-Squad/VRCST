@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 rem Check if Python is installed
-python3 --version >nul 2>&1
+python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo Python is not installed. Please install it and try again.
     echo Download Python by pressing Enter.
@@ -12,30 +12,43 @@ if %errorlevel% neq 0 (
 )
 
 rem Install setuptools if not already installed
-python -m pip install setuptools >nul 2>&1
+echo Checking for setuptools...
+python -m pip show setuptools >nul 2>&1
 if %errorlevel% neq 0 (
-    echo An error occurred during the installation of setuptools.
-    pause
-    exit /b
+    echo setuptools not found. Installing setuptools...
+    python -m pip install setuptools
+    if %errorlevel% neq 0 (
+        echo An error occurred during the installation of setuptools.
+        pause
+        exit /b
+    )
+) else (
+    echo setuptools is already installed.
 )
 
 rem Check if the required Python modules are installed
-python -c "import pkg_resources" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo An error occurred while checking for pkg_resources.
+echo Checking for required Python modules...
+if not exist requirements.txt (
+    echo requirements.txt file not found.
     pause
     exit /b
 )
 
-rem Install Python dependencies one by one from requirements.txt
-for /F %%i in (requirements.txt) do (
-    pip install %%i
-    if !errorlevel! neq 0 (
-        echo An error occurred during the installation of the dependency %%i.
-        pause
-        exit /b
+for /F "usebackq tokens=*" %%i in ("requirements.txt") do (
+    echo Checking for %%i...
+    python -m pip show %%i >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Installing %%i...
+        pip install %%i
+        if !errorlevel! neq 0 (
+            echo An error occurred during the installation of the dependency %%i.
+            pause
+            exit /b
+        ) else (
+            powershell -command "$Host.UI.RawUI.ForegroundColor = 'Green'; Write-Host 'Successfully installed the dependency %%i.'; $Host.UI.RawUI.ForegroundColor = 'White'"
+        )
     ) else (
-        powershell -command "$Host.UI.RawUI.ForegroundColor = 'Green'; Write-Host 'Successfully installed the dependency %%i.'; $Host.UI.RawUI.ForegroundColor = 'White'"
+        echo %%i is already installed.
     )
 )
 
