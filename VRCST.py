@@ -7,6 +7,7 @@ import shutil
 import datetime
 import time
 import logging
+import threading
 import hashlib
 import base64
 import json
@@ -100,7 +101,7 @@ local_script_path = "VRCST.py"
 user_id_file = 'LocalDB/temps/user_id.bin'
 user_agent = 'VRCST / Kawaii Squad Studio'
 auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
-friendlist = 'LocalDB/infos/friendslist.json'
+friendlist_folder = 'LocalDB/infos'
 auth_cookie = get_auth_cookie(auth_cookie_path)
 displayName = get_display_name()
 IP_VRCHAT = "127.0.0.1"
@@ -167,6 +168,7 @@ def fancy_welcome(version, developers=None):
     if developers is None:
         developers = [
             {'name': 'Kaichi-Sama', 'role': 'Lead Developer'},
+            {'name': 'Crystaldust', 'role': 'Developer'},
             {'name': 'ChatGPT', 'role': 'ALL Developer'}
         ]
 
@@ -207,7 +209,7 @@ def fancy_welcome(version, developers=None):
 # The File Updater
 def update_files():
     files_to_update = {
-        "VRChatScanner.py": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/VRChatScanner.py",
+        "VRCST.py": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/VRCST.py",
         "RunMe.bat": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/RunMe.bat",
         "requirements.txt": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/requirements.txt",
         "README.md": "https://raw.githubusercontent.com/Kawaii-Squad/VRCST/main/README.md"
@@ -626,17 +628,57 @@ def display_ids_filtered(option):
                 print(f"\033[92m{entity} ID: \033[95m{entity_id}\033[0m")
 
 # NETWORK DATABASE
-def launch_friendlistsaver():
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(script_dir)
-        friendlistsaver_path = os.path.join("Dependencies", "subscripts", "friendlistsaver.py")
 
-        if os.path.isfile(friendlistsaver_path):
-            if run_as_admin(friendlistsaver_path):
-                return
+def save_friends_list(displayName):
+    try:
+        auth_cookie = get_auth_cookie(auth_cookie_path)
+        if not auth_cookie:
+            print("No valid auth cookie found. Exiting function.")
+            return
+
+        url = "https://api.vrchat.cloud/api/1/auth/user/friends"
+        headers = {"User-Agent": user_agent}
+        cookies = {"auth": auth_cookie}
+
+        response = requests.get(url, headers=headers, cookies=cookies)
+        if response.status_code == 200:
+            friends_list = response.json()
+            
+            # Vérifie si la liste d'amis n'est pas vide
+            if friends_list:
+                friendlist_filename = os.path.join(friendlist_folder, f'friendlist_{displayName}.json')
+                
+                # Assurez-vous que le dossier existe avant d'écrire dans le fichier
+                os.makedirs(friendlist_folder, exist_ok=True)
+                
+                with open(friendlist_filename, 'w', encoding='utf-8') as f:
+                    json.dump(friends_list, f, ensure_ascii=False, indent=4)
+                    
+                print(f"\033[92mFriend list {friendlist_filename} has been updated.\033[0m")
+            
+            else:
+                print("Empty friends list received.")
+        
         else:
-            print(f"The specified file is not found: {friendlistsaver_path}")
+            print(f"Failed to retrieve friends list: {response.status_code}")
+
+    except Exception as e:
+        print(f"An error occurred in save_friends_list function: {e}")
+        traceback.print_exc()
+
+def launch_friendlistrecovery():
+    try:
+        # Specify the exact path to friendlistsaver.py (renamed as friendlistrecovery.py)
+        friendlistrecovery_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dependencies", "subscripts", "friendlistsaver.py")
+
+        # Check if friendlistrecovery.py exists
+        if os.path.isfile(friendlistrecovery_path):
+            # Run friendlistrecovery.py using subprocess.Popen
+            subprocess.Popen(["python", friendlistrecovery_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f"Launching {friendlistrecovery_path} for friend list recovery.")
+        else:
+            print(f"The specified file is not found: {friendlistrecovery_path}")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -672,7 +714,7 @@ def main_menu():
             print("\nHave Sex with Me!")
             break
         elif choice == "6":
-            launch_friendlistsaver()
+            launch_friendlistrecovery()
         else:
             print("Invalid option, please try again.")
 
@@ -720,4 +762,5 @@ update_files()
 fancy_welcome(version)
 advertise_kawaii_gang()
 login_and_save_auth_cookie()
+save_friends_list(displayName)
 main_menu()
