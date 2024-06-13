@@ -48,7 +48,7 @@ for /F "usebackq tokens=*" %%i in ("requirements.txt") do (
             powershell -command "$Host.UI.RawUI.ForegroundColor = 'Green'; Write-Host 'Successfully installed the dependency %%i.'; $Host.UI.RawUI.ForegroundColor = 'White'"
         )
     ) else (
-        echo %%i is already installed.
+        powershell -command "$Host.UI.RawUI.ForegroundColor = 'Green'; Write-Host '%%i is already installed.'; $Host.UI.RawUI.ForegroundColor = 'White'"
     )
 )
 
@@ -57,5 +57,5 @@ echo All Python dependencies have been successfully installed.
 rem Launch the Python script
 python VRCST.py
 
-rem Pause to display results (you can remove this if you wish)
+rem Pause to display results (optional)
 pause
