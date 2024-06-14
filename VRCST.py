@@ -36,6 +36,13 @@ from plyer import notification
 from pythonosc import udp_client
 import threading
 import ctypes
+from rich.console import Console
+from rich.text import Text
+from rich.table import Table
+from rich.style import Style
+from colorama import Fore, Style as ColoramaStyle, init
+
+init(autoreset=True)
 
 # Notification Windows
 def show_notification(title, message):
@@ -172,39 +179,42 @@ def fancy_welcome(version, developers=None):
             {'name': 'ChatGPT', 'role': 'ALL Developer'}
         ]
 
-    welcome_text = r"""
- /$$    /$$ /$$$$$$$   /$$$$$$   /$$$$$$  /$$$$$$$$                                                            
-| $$   | $$| $$__  $$ /$$__  $$ /$$__  $$|__  $$__/                                                            
-| $$   | $$| $$  \ $$| $$  \__/| $$  \__/   | $$                                                               
-|  $$ / $$/| $$$$$$$/| $$      |  $$$$$$    | $$                                                               
- \  $$ $$/ | $$__  $$| $$       \____  $$   | $$                                                               
-  \  $$$/  | $$  \ $$| $$    $$ /$$  \ $$   | $$                                                               
-   \  $/   | $$  | $$|  $$$$$$/|  $$$$$$/   | $$                                                               
-    \_/    |__/  |__/ \______/  \______/    |__/           
+    # Texte ASCII art en vert
+    welcome_text = f"""
+[green]     /$$    /$$ /$$$$$$$   /$$$$$$   /$$$$$$  /$$$$$$$$
+    | $$   | $$| $$__  $$ /$$__  $$ /$$__  $$|__  $$__/
+    | $$   | $$| $$  \\ $$| $$  \\__/| $$  \\__/   | $$
+    |  $$ / $$/| $$$$$$$/| $$      |  $$$$$$    | $$
+     \\  $$ $$/ | $$__  $$| $$       \\____  $$   | $$
+      \\  $$$/  | $$  \\ $$| $$    $$ /$$  \\ $$   | $$
+       \\  $/   | $$  | $$|  $$$$$$/|  $$$$$$/   | $$
+        \\_/    |__/  |__/ \\______/  \\______/    |__/[/green]
     """
 
-    thank_you_text = "Thank you for using the Kawaii VRC Scanner Tool"
+    # Texte de remerciement en jaune avec rich
+    thank_you_text = Text("Thank you for using the Kawaii VRC Scanner Tool", style="yellow")
 
+    # Box de version
     version_box = f"""
-╔══════════════════════════════════════════════════════════════════════════════════╗
-║                                    Version: {version:<}                                ║
-╚══════════════════════════════════════════════════════════════════════════════════╝
-"""
+    ╭─── Version ────╮
+    │ Version: {version} │
+    ╰────────────────╯
+    """
 
-    print(welcome_text)
-    print(thank_you_text)
-    print(version_box)
+    # Tableau des développeurs avec rich
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Name", style="bold red")
+    table.add_column("Role", style="bold green")
 
-    developers_heading = "Developers and Contributors"
-    print("+" + "-" * 76 + "+")
-    print(f"|{developers_heading.center(76)}|")
-    print("+" + "-" * 76 + "+")
     for dev in developers:
-        name = dev.get('name', 'Unknown')
-        role = dev.get('role', 'Contributor')
-        dev_entry = f"| {name} - {role.ljust(60)} |"
-        print(dev_entry)
-    print("+" + "-" * 76 + "+")
+        table.add_row(dev['name'], dev['role'])
+
+    # Affichage avec rich
+    console = Console()
+    console.print(welcome_text)
+    console.print(thank_you_text)
+    console.print(version_box)
+    console.print(table)
 
 # The File Updater
 def update_files():
@@ -324,24 +334,11 @@ def perform_login():
 
         save_vrchat_user_id()
 
-# VRC-OSC
-def send_osc_message(address, *args):
-    client = udp_client.SimpleUDPClient(IP_VRCHAT, PORT_VRCHAT_SEND)
-    client.send_message(address, args)
-
-def advertise_kawaii_gang():
-    kawaii_frames = [
-        "?? Thanks for using Kawaii Squad Script ??",
-        "? Discover amazing assets with us! ?",
-        "?? Visit our community for free leaks! ??",
-        "?? Join Kawaii Squad Free! ??"
-    ]
-
-    chatbox_address = "/chatbox/input"
-
-    for frame in kawaii_frames:
-        send_osc_message(chatbox_address, frame)
-        time.sleep(2)
+# Restart Fonction
+def restart_program():
+    print("\033[92mRestarting program... Please wait.\033[0m")
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
 
 # UserID Saver
 def save_vrchat_user_id():
@@ -361,6 +358,8 @@ def save_vrchat_user_id():
         return True
     else:
         print(f"Error retrieving user information: {response.status_code}")
+        print("\033[92mRestarting program... Please wait.\033[0m")
+        restart_program()  # Redémarre le programme en cas d'échec
         return False
 
 # LOGGER
@@ -687,16 +686,17 @@ def Network_database_menu():
     print("Network Database is not finished and needs another developer to fix it. Thanks <3")
 
 # GUI
+init()
 def main_menu():
     while True:
-        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisama.{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTMAGENTA_EX}Join : https://discord.gg/7KprcpxhEH{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / >_Unknown User{Style.RESET_ALL}")
-        print(f"\n{Fore.GREEN}? Kaichi-Sama Menu UwU ?{Style.RESET_ALL}:")
+        print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisama.{Fore.RESET}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Join : https://t.me/+uIv0MsARg4oyZTBh{Fore.RESET}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / >_Unknown User{Fore.RESET}")
+        print(f"\n{Fore.GREEN}? Kaichi-Sama Menu UwU ?{Fore.RESET}:")
         print("1. Local Database")
-        print(f"2. Network Database {Fore.RED}Not Finished Need an other Dev for fix it Thanks <3{Style.RESET_ALL}")
+        print(f"2. Network Database {Fore.RED}Not Finished Need an other Dev for fix it Thanks <3{Fore.RESET}")
         print("3. Start The Logger")
-        print(f"{Fore.RED}4. DON'T CLICK HERE{Style.RESET_ALL}")
+        print(f"{Fore.RED}4. DON'T CLICK HERE{Fore.RESET}")
         print("5. Exit")
         print("6. Automatic Friendlist request")
         choice = input("Choose an option: ")
@@ -781,8 +781,6 @@ def play_default_music():
         # Lecture de la musique en boucle (-1 indique une lecture en boucle)
         pygame.mixer.music.play(loops=-1)
         
-        print(f"Playing default music from {default_music_path}. Press Ctrl+C to stop.")
-        
         # Attente jusqu'à ce que l'utilisateur arrête manuellement
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)  # Attente pour réduire l'utilisation du processeur
@@ -796,11 +794,10 @@ def play_default_music():
     finally:
         pygame.quit()
 
-music_thread = threading.Thread(target=play_default_music)
-music_thread.start()
 update_files()
 fancy_welcome(version)
-advertise_kawaii_gang()
 login_and_save_auth_cookie()
 save_friends_list(displayName)
+music_thread = threading.Thread(target=play_default_music)
+music_thread.start()
 main_menu()
