@@ -13,6 +13,7 @@ import base64
 import json
 import subprocess
 import requests
+from collections import defaultdict
 from getpass import getpass
 from collections import defaultdict
 from urllib.request import Request
@@ -136,31 +137,35 @@ def hash_file(filepath):
 
 def load_log_data(log_path):
     if not os.path.exists(log_path):
-        return defaultdict(list)
-    with open(log_path, 'r') as log_file:
-        try:
+        return defaultdict(list)  # Retourne un defaultdict vide de listes si le fichier n'existe pas
+    try:
+        with open(log_path, 'r') as log_file:
             data = json.load(log_file)
-            return defaultdict(list, data)
-        except json.JSONDecodeError:
-            return defaultdict(list)
+            return defaultdict(list, data)  # Charge les données depuis le fichier JSON en un defaultdict
+    except json.decoder.JSONDecodeError:
+        return defaultdict(list)
 
 def update_log_data(log_path, file_hash, file_id_without_extension, target_path):
     log_data = load_log_data(log_path)
+    
     if file_hash not in log_data:
         log_data[file_hash] = [file_id_without_extension]
-        with open(log_path, 'w') as log_file:
-            json.dump(dict(log_data), log_file, indent=2)
-        print(f"{Fore.BLUE}Original file logged: {file_id_without_extension}{Style.RESET_ALL}")
+        try:
+            with open(log_path, 'w') as log_file:
+                json.dump(dict(log_data), log_file, indent=2)
+        except IOError as e:
+            print(f"Error writing data to {log_path}: {e}")
+        print(f"\033[94mOriginal file logged: {file_id_without_extension}\033[0m")
         return False
+    
     if file_id_without_extension == log_data[file_hash][0]:
-        print(f"{Fore.BLUE}Original file confirmed: {file_id_without_extension}{Style.RESET_ALL}")
+        print(f"\033[94mOriginal file confirmed: {file_id_without_extension}\033[0m")
         return False
     else:
         if os.path.exists(target_path):
             os.remove(target_path)
-            print(f"{Fore.YELLOW}Duplicate file removed: {file_id_without_extension}{Style.RESET_ALL}")
+            print(f"\033[93mDuplicate file removed: {file_id_without_extension}\033[0m")
         return True
-
 def run_as_admin(script_path):
     if ctypes.windll.shell32.IsUserAnAdmin() == 0:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, script_path, None, 1)
@@ -385,8 +390,8 @@ def download_entity_image(entity_id, entity_type):
                 logging.warning(f"No image URL for entity ID {entity_id}")
                 return
 
-            try:
-                headers = {'User-Agent': 'VRC Scanner Tool / Kawaii Squad'}
+            try:    
+                headers = {"User-Agent": user_agent}
                 response = requests.get(image_url, headers=headers)
                 response.raise_for_status()
 
@@ -407,15 +412,14 @@ def download_entity_image(entity_id, entity_type):
     logging.warning(f"Entity ID {entity_id} was not found in {file_path}")
 
 def get_info_id(id_, id_type):
+    # Fonction pour récupérer les informations à partir de l'API VRChat
     url = f"https://api.vrchat.cloud/api/1/{'avatars' if id_type == 'VRCA' else 'worlds'}/{id_}" if id_type in ['VRCA', 'VRCW'] else None
 
     if not url:
         print(f"Unsupported ID type: {id_type}")
         return None
-
     headers = {"User-Agent": user_agent}
     cookies = {"auth": auth_cookie}
-
     response = requests.get(url, headers=headers, cookies=cookies)
     if response.status_code == 200:
         try:
@@ -427,42 +431,50 @@ def get_info_id(id_, id_type):
         data_file_path = 'LocalDB/temps/Temp_data.json'
         existing_data = {}
 
-        if os.path.exists(data_file_path):
-            try:
+        try:
+            if os.path.exists(data_file_path):
                 with open(data_file_path, 'r') as file:
                     existing_data = json.load(file)
-            except json.decoder.JSONDecodeError:
-                print(f"Error decoding existing data from {data_file_path}. File content: {file.read()}")
-                existing_data = {}
+        except json.decoder.JSONDecodeError as e:
+            print(f"Error decoding existing data from {data_file_path}. Error message: {e}")
+            existing_data = {}
 
         existing_data[id_] = data
 
-        with open(data_file_path, 'w') as file:
-            json.dump(existing_data, file, indent=4)
+        try:
+            with open(data_file_path, 'w') as file:
+                json.dump(existing_data, file, indent=4)
+        except IOError as e:
+            print(f"Error writing data to {data_file_path}. Error message: {e}")
 
-        print(f"\033[92mInformations successfully recorded for {id_type} ID {id_} : Public.\033[0m")
+        print(f"\033[92mInformation successfully recorded for {id_type} ID {id_} : Public.\033[0m")
         return data
+
     elif response.status_code == 404:
-        print(f"\033[91mInformations failed recorded for {id_type} ID {id_} : Private.\033[0m")
+        print(f"\033[91mInformation failed recorded for {id_type} ID {id_} : Private.\033[0m")
         private_info = {"id": id_, "type": id_type, "status": "private"}
         data_file_path = 'LocalDB/temps/Temp_data.json'
         existing_data = {}
 
-        if os.path.exists(data_file_path):
-            try:
+        try:
+            if os.path.exists(data_file_path):
                 with open(data_file_path, 'r') as file:
                     existing_data = json.load(file)
-            except json.decoder.JSONDecodeError:
-                print(f"Error decoding existing data from {data_file_path}. File content: {file.read()}")
-                existing_data = {}
+        except json.decoder.JSONDecodeError as e:
+            print(f"Error decoding existing data from {data_file_path}. Error message: {e}")
+            existing_data = {}
 
         existing_data[id_] = private_info
 
-        with open(data_file_path, 'w') as file:
-            json.dump(existing_data, file, indent=4)
+        try:
+            with open(data_file_path, 'w') as file:
+                json.dump(existing_data, file, indent=4)
+        except IOError as e:
+            print(f"Error writing data to {data_file_path}. Error message: {e}")
 
         save_json_data(f'LocalDB/infos/INFO_{id_type}.json', private_info)
         return private_info
+
     else:
         print(f"\033[91mUnexpected response status: {response.status_code} for {id_type} ID {id_}.\033[0m")
         return None
@@ -489,8 +501,8 @@ def save_json_data(file_path, new_data):
     with open(file_path, 'w') as file:
         json.dump(existing_data, file, indent=2)
 
-def start_the_logger():
-    print(f"{Fore.LIGHTMAGENTA_EX}Logger Started Network & Locally{Style.RESET_ALL}")
+def start_the_logger(PATH):
+    print("\033[95mLogger Started Network & Locally\033[0m")
     create_directory("LocalDB/VRCA")
     create_directory("LocalDB/VRCW")
     create_directory("LocalDB/infos")
@@ -515,8 +527,8 @@ def start_the_logger():
                         try:
                             blueprint_id = extract_blueprint_ids(filepath)
                             if blueprint_id:
-                                print(f"{Fore.YELLOW}File Analysis: {Fore.LIGHTCYAN_EX}{filepath}{Style.RESET_ALL}", end="")
-                                print(f"\n{Fore.MAGENTA}Blueprint ID Found: {Fore.LIGHTCYAN_EX}{blueprint_id}{Style.RESET_ALL}")
+                                print(f"\033[93mFile Analysis: \033[96m{filepath}\033[0m")
+                                print(f"\033[95mBlueprint ID Found: \033[96m{blueprint_id}\033[0m")
 
                                 entity_type = 'VRCA' if blueprint_id.startswith('avtr_') else 'VRCW'
                                 log_path = os.path.join("LocalDB", "infos", f"ID_REF_{entity_type.upper()}.json")
@@ -530,7 +542,7 @@ def start_the_logger():
 
                                 if not os.path.exists(target_path) and not is_duplicate:
                                     shutil.copy(filepath, target_path)
-                                    print(f"{datetime.datetime.now()} - {Fore.GREEN}{entity_type} Added Successfully: {blueprint_id}{Style.RESET_ALL}")
+                                    print(f"{datetime.datetime.now()} - \033[92m{entity_type} Added Successfully: {blueprint_id}\033[0m")
 
                                     if info:
                                         save_json_data(info_path, info)
@@ -538,7 +550,7 @@ def start_the_logger():
                                             download_entity_image(blueprint_id, entity_type)
 
                                 elif os.path.exists(target_path):
-                                    print(f"{datetime.datetime.now()} - {Fore.RED}{entity_type} Already Exists: {blueprint_id}{Style.RESET_ALL}")
+                                    print(f"{datetime.datetime.now()} - \033[91m{entity_type} Already Exists: {blueprint_id}\033[0m")
 
                                 has_processed_files = True
                                 print()
@@ -555,7 +567,7 @@ def start_the_logger():
         processed_dirs.update(new_processed_dirs)
         last_processed_time = time.time()
 
-    print(Style.RESET_ALL)
+    print("\033[0m")
 
 # LOCAL DATABASE (NOT FINISH)
 def research_id_in_local_database(search_id):
@@ -689,7 +701,7 @@ def main_menu():
     while True:
         print(f"{Fore.RED}\nNasa got Hacked by Kaichi-Sama {Fore.GREEN}for question dm Discord : kaichisama.{Fore.RESET}")
         print(f"{Fore.LIGHTMAGENTA_EX}Join : https://t.me/+uIv0MsARg4oyZTBh{Fore.RESET}")
-        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Kawaii Squad Devs : Kaichi-Sama / >_Unknown User{Fore.RESET}")
+        print(f"{Fore.LIGHTMAGENTA_EX}Powered by Chat GPT{Fore.RESET}")
         print(f"\n{Fore.GREEN}? Kaichi-Sama Menu UwU ?{Fore.RESET}:")
         print("1. Local Database")
         print(f"2. Network Database {Fore.RED}Not Finished Need an other Dev for fix it Thanks <3{Fore.RESET}")
@@ -704,7 +716,7 @@ def main_menu():
         elif choice == "2":
             Network_database_menu()
         elif choice == "3":
-            start_the_logger()
+            start_the_logger(PATH)
         elif choice == "4":
             print("you get Rickrolled by KawaiiTools Dev Team <3")
             rickroll()
@@ -787,7 +799,7 @@ def play_default_music():
     finally:
         pygame.quit()
 
-update_files()
+#update_files()
 fancy_welcome(version)
 login_and_save_auth_cookie()
 save_friends_list(displayName)
