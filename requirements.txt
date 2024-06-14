@@ -1,10 +1,10 @@
-colorama
-datetime
-keyboard
-plyer
-pyfiglet
-python-osc
+pygame
 requests
+pyfiglet
 UnityPy
+keyboard
 vrchatapi
+colorama
+plyer
+python-osc
 rich
