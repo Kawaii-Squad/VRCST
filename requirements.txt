@@ -7,5 +7,4 @@ python-osc
 requests
 UnityPy
 vrchatapi
-pygame
 rich
