@@ -799,7 +799,7 @@ def play_default_music():
     finally:
         pygame.quit()
 
-#update_files()
+update_files()
 fancy_welcome(version)
 login_and_save_auth_cookie()
 save_friends_list(displayName)
