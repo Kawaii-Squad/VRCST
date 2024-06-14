@@ -42,8 +42,6 @@ from rich.table import Table
 from rich.style import Style
 from colorama import Fore, Style as ColoramaStyle, init
 
-init(autoreset=True)
-
 # Notification Windows
 def show_notification(title, message):
     notification.notify(
@@ -171,6 +169,7 @@ def run_as_admin(script_path):
         print("The script is already running with administrator privileges.")
 
 # Fancy Welcome
+
 def fancy_welcome(version, developers=None):
     if developers is None:
         developers = [
@@ -602,9 +601,8 @@ def display_all_ids_in_cache():
                     if blueprint_id:
                         id_type = "Avatar" if blueprint_id.startswith('avtr_') else "World"
                         id_color = Fore.LIGHTYELLOW_EX if id_type == "Avatar" else Fore.LIGHTMAGENTA_EX
-                        print(f"{Fore.YELLOW}File Analysis: {Fore.LIGHTCYAN_EX}{filepath}{Style.RESET_ALL}", end="")
-                        print()
-                        print(f"{datetime.datetime.now()} - {id_color}{id_type} ID : {Fore.GREEN}{blueprint_id}{Style.RESET_ALL}")
+                        print(f"{Fore.YELLOW}File Analysis: {Fore.LIGHTCYAN_EX}{filepath}{Fore.RESET}")
+                        print(f"{datetime.datetime.now()} - {id_color}{id_type} ID : {Fore.GREEN}{blueprint_id}{Fore.RESET}")
                 except Exception as e:
                     print(f"Error reading file {filepath}. Error message: {e}")
 
@@ -722,19 +720,15 @@ def local_database_menu():
     while True:
         print("\nLocal Database Menu:")
         print("1. Display All IDs in Cache")
-        print("2. Research an ID in Cache")
-        print("3. Filtered Local Research")
-        print("4. Research an ID in LocalDatabase")
-        print("5. Back to Main Menu")
+        print("2. Filtered Local Research")
+        print("3. Research an ID in LocalDatabase")
+        print("4. Back to Main Menu")
 
         choice = input("Choose an option: ")
 
         if choice == "1":
             display_all_ids_in_cache()
         elif choice == "2":
-            search_id = input("\nEnter the ID you want to research in cache: ")
-            search_in_cache(search_id)
-        elif choice == "3":
             print("\nSub-Menu:")
             print("1. Display World Info")
             print("2. Display Avatar Info")
@@ -746,10 +740,10 @@ def local_database_menu():
                 display_ids_filtered("Avatar")
             else:
                 print("Invalid option, please try again.")
-        elif choice == "4":
+        elif choice == "3":
             search_id = input("\nEnter the ID you want to research in the LocalDatabase: ")
             research_id_in_local_database(search_id)
-        elif choice == "5":
+        elif choice == "4":
             break
         else:
             print("Invalid option, please try again.")
@@ -765,11 +759,10 @@ def play_default_music():
         
         # Chemin relatif vers le fichier audio par défaut
         script_directory = os.path.dirname(__file__)
-        default_music_path = os.path.join(script_directory, 'Dependencies', 'RIP_MY_AVI Kaichi-Sama.mp3')
+        default_music_path = os.path.join(script_directory, 'Dependencies', '20  Discover the Abyss.mp3')
         
         # Vérification si le fichier existe
-        if not os.path.exists(default_music_path):
-            print(f"File {default_music_path} not found.")
+        if not os.path.exists(default_music_path):   
             return
         
         # Initialisation du lecteur audio
@@ -778,10 +771,10 @@ def play_default_music():
         # Chargement du fichier audio
         pygame.mixer.music.load(default_music_path)
         
-        # Lecture de la musique en boucle (-1 indique une lecture en boucle)
-        pygame.mixer.music.play(loops=-1)
+        # Lecture de la musique une fois (0 indique une lecture une seule fois)
+        pygame.mixer.music.play(loops=0)
         
-        # Attente jusqu'à ce que l'utilisateur arrête manuellement
+        # Attente jusqu'à ce que la musique se termine
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)  # Attente pour réduire l'utilisation du processeur
         
