@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pygame
 import os
 import re
@@ -14,8 +13,7 @@ import json
 import subprocess
 import requests
 from collections import defaultdict
-from getpass import getpass
-from collections import defaultdict
+import getpass  # Assurez-vous que getpass est importé
 from urllib.request import Request
 import traceback
 import pyfiglet
@@ -25,7 +23,7 @@ from UnityPy.enums import ClassIDType
 from UnityPy.classes.Object import NodeHelper
 import keyboard
 import vrchatapi
-from vrchatapi.api import authentication_api, avatars_api, worlds_api
+from vrchatapi.api import authentication_api, avatars_api, worlds_api, AuthenticationApi
 from vrchatapi.exceptions import UnauthorizedException
 from vrchatapi.models.two_factor_auth_code import TwoFactorAuthCode
 from vrchatapi.models.two_factor_email_code import TwoFactorEmailCode
@@ -65,54 +63,22 @@ version = "1.1.0"
 def get_auth_cookie(auth_cookie_path):
     if os.path.exists(auth_cookie_path):
         with open(auth_cookie_path, 'r') as file:
-            cookie_content = file.read().strip()
-            auth_cookie = next((part.split('=')[1] for part in cookie_content.split('; ') if part.startswith('auth=')), None)
-            if auth_cookie:
-                return auth_cookie
-            else:
-                return None
+            auth_cookie_value = file.read().strip()
+            return auth_cookie_value
     else:
-        return None
-
-# Username Saver
-def get_display_name():
-    if not os.path.exists(user_id_file):
-        print(f"User ID file not found: {user_id_file}")
-        return None
-
-    with open(user_id_file, 'r') as file:
-        user_id = file.read().strip()
-
-    url = f"https://api.vrchat.cloud/api/1/users/{user_id}"
-    headers = {"User-Agent": user_agent}
-    cookies = {"auth": auth_cookie}
-
-    response = requests.get(url, headers=headers, cookies=cookies)
-
-    if response.status_code == 200:
-        user_info = response.json()
-
-        if isinstance(user_info, list) and user_info:
-            return user_info[0].get('displayName')
-        elif isinstance(user_info, dict):
-            return user_info.get('displayName')
-        else:
-            print("Unexpected response format:", user_info)
-            return None
-    else:
-        print(f"Error retrieving user information: {response.status_code}")
+        print(f"Auth cookie file not found at: {auth_cookie_path}")
         return None
 
 local_script_path = "VRCST.py"
-user_id_file = 'LocalDB/temps/user_id.bin'
+user_info_file = "LocalDB/temps/User_Info.bin"
 user_agent = 'VRCST / Kawaii Squad Studio'
 auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
 friendlist_folder = 'LocalDB/infos'
 auth_cookie = get_auth_cookie(auth_cookie_path)
-displayName = get_display_name()
 IP_VRCHAT = "127.0.0.1"
 PORT_VRCHAT_SEND = 9000
-
+username = 'your_username_here'
+password = 'your_password_here'
 # INTERNAL FUNCTIONS
 def create_directory(directory):
     try:
@@ -250,121 +216,113 @@ def update_files():
         else:
             print(f"Failed to download file {file_name} from {remote_url}. Status code: {response.status_code}")
 
+    # After updating files, restart the script using RunMe.bat
+    restart_script()
+
+def restart_script():
+    print("Restarting the script...")
+    try:
+        subprocess.run(["RunMe.bat"], shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while restarting the script: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred while restarting the script: {e}")
+        
 # Login Script
-def login_and_save_auth_cookie():
-    print("Welcome to the VRChat login script!")
 
-    if os.path.exists(auth_cookie_path):
-        with open(auth_cookie_path, "r") as f:
-            content = f.read()
-            auth_cookie = None
-            two_factor_auth = None
-            for line in content.split(';'):
-                if line.startswith('auth='):
-                    auth_cookie = line[len('auth='):]
-                elif line.startswith('twoFactorAuth='):
-                    two_factor_auth = line[len('twoFactorAuth='):]
-
-            if auth_cookie and not two_factor_auth:
-                try:
-                    response = validate_auth_cookie(auth_cookie)
-                    if response.status_code == 200:
-                        print("\033[92mLogged in with existing authCookie.\033[0m")
-                        save_vrchat_user_id()
-                        print("\033[92mLogged as:", displayName, "\033[0m")
-                        return
-                except Exception as e:
-                    print(f"Error validating existing authCookie: {e}")
-
-    perform_login()
-
-def validate_auth_cookie(auth_cookie, current_user=None):
-    url = "https://api.vrchat.cloud/api/1/auth"
-    headers = {
-        "Cookie": f"amplitude_id_a750df50d11f21f712262cbd4c0bab37vrchat.com=string; auth={auth_cookie}",
-        "User-Agent": user_agent
-    }
-
-    print(f"Sending test request to {url} with headers: {headers}")
-    response = requests.get(url, headers=headers)
-    
-    print(f"Response status code: {response.status_code}")
-    print(f"Response content: {response.text}")
-
-    return response
-
-def perform_login():
-    username = input("Enter your VRChat username: ")
-    password = getpass("Enter your VRChat password: ")
-
-    configuration = vrchatapi.Configuration(
-        username=username,
-        password=password,
-    )
-
-    with vrchatapi.ApiClient(configuration) as api_client:
-        api_client.user_agent = user_agent
-        auth_api = authentication_api.AuthenticationApi(api_client)
-
+def login_to_vrchat():
+    while True:
         try:
-            current_user = auth_api.get_current_user()
-            print("Logged in as:", current_user.display_name)
+            # Demander à l'utilisateur de saisir le nom d'utilisateur et le mot de passe
+            username = input("Enter your VRChat username: ")
+            password = getpass.getpass("Enter your VRChat password: ")
+
+            # Step 1. Création de la configuration pour l'authentification
+            configuration = vrchatapi.Configuration(
+                username=username,
+                password=password,
+            )
+
+            # Step 2. Entrer dans un contexte avec une instance du client API
+            with vrchatapi.ApiClient(configuration) as api_client:
+                # Step 3. Définir l'User-Agent conforme à la politique d'utilisation de VRChat
+                api_client.user_agent = user_agent
+
+                # Step 4. Instancier les API nécessaires
+                auth_api = authentication_api.AuthenticationApi(api_client)
+
+                try:
+                    # Step 5. Appel à getCurrentUser sur l'API d'authentification pour se connecter
+                    current_user = auth_api.get_current_user()
+
+                except UnauthorizedException as e:
+                    if e.status == 200:
+                        if "Email 2 Factor Authentication" in e.reason:
+                            # Step 5.1. Appel à verify2fa_email_code si la 2FA par email est requise
+                            auth_api.verify2_fa_email_code(two_factor_email_code=TwoFactorEmailCode(input("Email 2FA Code: ")))
+
+                        elif "2 Factor Authentication" in e.reason:
+                            # Step 5.2. Appel à verify2fa si la 2FA par code est requise
+                            auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(input("2FA Code: ")))
+
+                        # Réessayer de récupérer les informations de l'utilisateur après la vérification 2FA
+                        current_user = auth_api.get_current_user()
+
+                    else:
+                        print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
+
+                except vrchatapi.ApiException as e:
+                    print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
+
+                # Step 6. Vérifier si current_user est défini avant d'afficher
+                if current_user:
+                    # Step 7. Affichage du nom d'utilisateur connecté
+                    print("Logged in as:", current_user.display_name)
+
+                    # Sauvegarde du cookie d'authentification
+                    credentials = f"{username}:{password}"
+                    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+                    headers = {
+                        "Authorization": f"Basic {encoded_credentials}",
+                        "User-Agent": user_agent
+                    }
+
+                    session = requests.Session()
+                    response = session.get("https://api.vrchat.cloud/api/1/auth/user", headers=headers)
+
+                    if response.status_code == 200:
+                        auth_cookie = session.cookies.get('auth')
+                        if auth_cookie:
+                            os.makedirs(os.path.dirname(auth_cookie_path), exist_ok=True)
+                            with open(auth_cookie_path, "w") as f:
+                                auth_cookie_data = f'auth="{auth_cookie}"\n'
+                                f.write(auth_cookie_data)
+                            print("Authentication cookie saved in AuthCookie.bin")
+                        else:
+                            print("\033[91m" + "Failed to retrieve auth cookie. Please check your credentials." + "\033[0m")
+                    else:
+                        print("\033[91m" + "Failed to retrieve user information. Please retry." + "\033[0m")
+                    
+                    return current_user  # Retourner l'objet utilisateur actuel
+                else:
+                    print("\033[91m" + "Failed to retrieve current user information." + "\033[0m")
+
         except UnauthorizedException as e:
-            if e.status == 200:
+            if e.status == 401:
+                print("\033[91m" + "Invalid username or password. Please retry." + "\033[0m")
+            elif e.status == 200 and ("Email 2 Factor Authentication" in e.reason or "2 Factor Authentication" in e.reason):
                 if "Email 2 Factor Authentication" in e.reason:
                     auth_api.verify2_fa_email_code(two_factor_email_code=TwoFactorEmailCode(input("Email 2FA Code: ")))
                 elif "2 Factor Authentication" in e.reason:
                     auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(input("2FA Code: ")))
-                current_user = auth_api.get_current_user()
-                print("Logged in as:", current_user.display_name)
             else:
-                print("Exception when calling API:", e)
+                print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
         except vrchatapi.ApiException as e:
-            print("Exception when calling API:", e)
-            return
+            print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
+        except Exception as ex:
+            print("\033[91m" + f"Failed to log in. Please retry. Error: {ex}" + "\033[0m")
 
-        print("\033[92mLogged in as:", current_user.display_name + "\033[0m")
-        show_notification('Connected Successfully', 'User has successfully logged in.')
-        cookies = api_client.rest_client.cookie_jar
-        mock_request_object = Request(url="https://api.vrchat.cloud/api/1/auth/user", method="GET")
-        cookies.add_cookie_header(mock_request_object)
-        auth_cookie = mock_request_object.get_header("Cookie")
-
-        os.makedirs("LocalDB/temps", exist_ok=True)
-
-        with open(auth_cookie_path, "wb") as f:
-            f.write(auth_cookie.encode())
-        print("Authentication cookie saved in AuthCookie.bin")
-
-        save_vrchat_user_id()
-
-# Restart Fonction
-def restart_program():
-    print("\033[92mRestarting program... Please wait.\033[0m")
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
-
-# UserID Saver
-def save_vrchat_user_id():
-    url = "https://api.vrchat.cloud/api/1/auth/user"
-    headers = {"User-Agent": user_agent}
-    cookies = {"auth": auth_cookie}
-
-    response = requests.get(url, headers=headers, cookies=cookies)
-    if response.status_code == 200:
-        user_info = response.json()
-        user_id = user_info.get('id')
-
-        with open(user_id_file, 'wb') as file:
-            file.write(user_id.encode('utf-8'))
-
-        print("User ID successfully saved in the logs directory.")
-        return True
-    else:
-        print(f"Error retrieving user information: {response.status_code}")
-        print("\033[92mRestarting program... Please wait.\033[0m")
-        restart_program()  # Redémarre le programme en cas d'échec
-        return False
+    return None
 
 # LOGGER
 def download_entity_image(entity_id, entity_type):
@@ -638,36 +596,31 @@ def display_ids_filtered(option):
 
 # NETWORK DATABASE
 
-def save_friends_list(displayName):
+def save_friends_list(username):
     try:
-        auth_cookie = get_auth_cookie(auth_cookie_path)
-        if not auth_cookie:
-            print("No valid auth cookie found. Exiting function.")
-            return
-
         url = "https://api.vrchat.cloud/api/1/auth/user/friends"
-        headers = {"User-Agent": user_agent}
-        cookies = {"auth": auth_cookie}
+        headers = {"User-Agent": 'VRCST / Kawaii Squad Studio'}
+        auth_cookie_path = 'LocalDB/temps/AuthCookie.bin'
+        
+        with open(auth_cookie_path, "r") as f:
+            auth_cookie = f.read().strip()
 
+        cookies = {"auth": auth_cookie}
         response = requests.get(url, headers=headers, cookies=cookies)
+
         if response.status_code == 200:
             friends_list = response.json()
             
-            # Vérifie si la liste d'amis n'est pas vide
             if friends_list:
-                friendlist_filename = os.path.join(friendlist_folder, f'friendlist_{displayName}.json')
+                friendlist_filename = f'friendlist_{username}.json'
+                os.makedirs('LocalDB/infos', exist_ok=True)
                 
-                # Assurez-vous que le dossier existe avant d'écrire dans le fichier
-                os.makedirs(friendlist_folder, exist_ok=True)
-                
-                with open(friendlist_filename, 'w', encoding='utf-8') as f:
+                with open(f'LocalDB/infos/{friendlist_filename}', 'w', encoding='utf-8') as f:
                     json.dump(friends_list, f, ensure_ascii=False, indent=4)
                     
                 print(f"\033[92mFriend list {friendlist_filename} has been updated.\033[0m")
-            
             else:
                 print("Empty friends list received.")
-        
         else:
             print(f"Failed to retrieve friends list: {response.status_code}")
 
@@ -682,8 +635,13 @@ def launch_friendlistrecovery():
 
         # Check if friendlistrecovery.py exists
         if os.path.isfile(friendlistrecovery_path):
-            # Run friendlistrecovery.py using subprocess.Popen
-            subprocess.Popen(["python", friendlistrecovery_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Use subprocess.Popen to open the script in a separate command prompt window on Windows
+            if os.name == 'nt':  # Check if operating system is Windows
+                subprocess.Popen(['start', 'cmd', '/k', 'python', friendlistrecovery_path], shell=True)
+            else:
+                # For Unix-like systems (Linux, macOS), open in a separate terminal
+                subprocess.Popen(['x-terminal-emulator', '-e', 'python', friendlistrecovery_path])
+
             print(f"Launching {friendlistrecovery_path} for friend list recovery.")
         else:
             print(f"The specified file is not found: {friendlistrecovery_path}")
@@ -761,7 +719,7 @@ def local_database_menu():
             print("Invalid option, please try again.")
 
 def rickroll():
-    url = 'https://www.youtube.com/watch?v=0wpvkIkAkbk&list=RDMM'
+    url = 'https://theannoyingsite.com/'
     wb.open(url)
 
 def play_default_music():
@@ -801,8 +759,7 @@ def play_default_music():
 
 update_files()
 fancy_welcome(version)
-login_and_save_auth_cookie()
-save_friends_list(displayName)
+login_to_vrchat()
 music_thread = threading.Thread(target=play_default_music)
 music_thread.start()
 main_menu()
