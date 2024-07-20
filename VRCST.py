@@ -40,6 +40,7 @@ from rich.text import Text
 from rich.table import Table
 from rich.style import Style
 from colorama import Fore, Style as ColoramaStyle, init
+from http.cookiejar import LWPCookieJar
 
 # Notification Windows
 def show_notification(title, message):
@@ -59,15 +60,15 @@ PATH = os.path.join(user_directory, "AppData", "LocalLow", "VRChat", "VRChat", "
 # VERSION DU LOGICIEL :
 version = "1.1.0"
 
-# AuthCookie
 def get_auth_cookie(auth_cookie_path):
     if os.path.exists(auth_cookie_path):
         with open(auth_cookie_path, 'r') as file:
-            auth_cookie_value = file.read().strip()
-            return auth_cookie_value
-    else:
-        print(f"Auth cookie file not found at: {auth_cookie_path}")
-        return None
+            lines = file.readlines()
+            for line in lines:
+                if line.startswith("Set-Cookie3: auth="):
+                    auth_cookie_value = line.split("auth=")[1].split(';')[0].strip()
+                    return auth_cookie_value
+    return None
 
 local_script_path = "VRCST.py"
 user_info_file = "LocalDB/temps/User_Info.bin"
@@ -77,8 +78,6 @@ friendlist_folder = 'LocalDB/infos'
 auth_cookie = get_auth_cookie(auth_cookie_path)
 IP_VRCHAT = "127.0.0.1"
 PORT_VRCHAT_SEND = 9000
-username = 'your_username_here'
-password = 'your_password_here'
 # INTERNAL FUNCTIONS
 def create_directory(directory):
     try:
@@ -230,99 +229,91 @@ def restart_script():
         
 # Login Script
 
+def save_auth_cookie(api_client, filename):
+    cookie_jar = LWPCookieJar(filename=filename)
+    for cookie in api_client.rest_client.cookie_jar:
+        cookie_jar.set_cookie(cookie)
+    cookie_jar.save()
+
+def load_auth_cookie(api_client, filename):
+    cookie_jar = LWPCookieJar(filename=filename)
+    if os.path.exists(filename):
+        try:
+            cookie_jar.load()
+        except Exception as e:
+            print(f"Error loading cookies from {filename}: {e}")
+            cookie_jar.save()
+    else:
+        cookie_jar.save()
+    for cookie in cookie_jar:
+        api_client.rest_client.cookie_jar.set_cookie(cookie)
+
 def login_to_vrchat():
+    print("Welcome to the VRChat login script!")
+
+    if os.path.exists(auth_cookie_path):
+        configuration = Configuration()
+        with ApiClient(configuration) as api_client:
+            api_client.user_agent = user_agent
+            load_auth_cookie(api_client, auth_cookie_path)
+
+            auth_api = authentication_api.AuthenticationApi(api_client)
+
+            try:
+                current_user = auth_api.get_current_user()
+                print("\033[92mLogged in as:", current_user.display_name + "\033[0m")
+                return  # If authentication is successful, exit the function
+            except ApiException as e:
+                if "Invalid Username/Email or Password" in str(e):
+                    print("Invalid Username/Email or Password. Please try again.")
+                else:
+                    print("Authentication failed with existing cookie. Login required.")
+
     while True:
         try:
-            # Demander à l'utilisateur de saisir le nom d'utilisateur et le mot de passe
             username = input("Enter your VRChat username: ")
             password = getpass.getpass("Enter your VRChat password: ")
 
-            # Step 1. Création de la configuration pour l'authentification
-            configuration = vrchatapi.Configuration(
+            configuration = Configuration(
                 username=username,
                 password=password,
             )
 
-            # Step 2. Entrer dans un contexte avec une instance du client API
-            with vrchatapi.ApiClient(configuration) as api_client:
-                # Step 3. Définir l'User-Agent conforme à la politique d'utilisation de VRChat
+            with ApiClient(configuration) as api_client:
                 api_client.user_agent = user_agent
-
-                # Step 4. Instancier les API nécessaires
                 auth_api = authentication_api.AuthenticationApi(api_client)
 
                 try:
-                    # Step 5. Appel à getCurrentUser sur l'API d'authentification pour se connecter
                     current_user = auth_api.get_current_user()
-
-                except UnauthorizedException as e:
-                    if e.status == 200:
+                except ApiException as e:
+                    if "Invalid Username/Email or Password" in str(e):
+                        print("Invalid Username/Email or Password. Please try again.")
+                        continue
+                    elif e.status == 200:
                         if "Email 2 Factor Authentication" in e.reason:
-                            # Step 5.1. Appel à verify2fa_email_code si la 2FA par email est requise
                             auth_api.verify2_fa_email_code(two_factor_email_code=TwoFactorEmailCode(input("Email 2FA Code: ")))
-
                         elif "2 Factor Authentication" in e.reason:
-                            # Step 5.2. Appel à verify2fa si la 2FA par code est requise
-                            auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(input("2FA Code: ")))
-
-                        # Réessayer de récupérer les informations de l'utilisateur après la vérification 2FA
+                            two_factor_code = input("2FA Code: ")
+                            if two_factor_code:
+                                auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(two_factor_code))
+                            else:
+                                print("Two-Factor Authentication is required, but no code provided.")
+                                continue
                         current_user = auth_api.get_current_user()
-
                     else:
-                        print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
+                        print("Exception when calling API:", e)
+                        continue
 
-                except vrchatapi.ApiException as e:
-                    print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
+                print("\033[92mLogged in as:", current_user.display_name + "\033[0m")
 
-                # Step 6. Vérifier si current_user est défini avant d'afficher
-                if current_user:
-                    # Step 7. Affichage du nom d'utilisateur connecté
-                    print("Logged in as:", current_user.display_name)
+                # Save the authentication cookie
+                save_auth_cookie(api_client, auth_cookie_path)
+                print("Authentication cookie saved in AuthCookie.bin")
+                break
 
-                    # Sauvegarde du cookie d'authentification
-                    credentials = f"{username}:{password}"
-                    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-                    headers = {
-                        "Authorization": f"Basic {encoded_credentials}",
-                        "User-Agent": user_agent
-                    }
-
-                    session = requests.Session()
-                    response = session.get("https://api.vrchat.cloud/api/1/auth/user", headers=headers)
-
-                    if response.status_code == 200:
-                        auth_cookie = session.cookies.get('auth')
-                        if auth_cookie:
-                            os.makedirs(os.path.dirname(auth_cookie_path), exist_ok=True)
-                            with open(auth_cookie_path, "w") as f:
-                                auth_cookie_data = f'auth="{auth_cookie}"\n'
-                                f.write(auth_cookie_data)
-                            print("Authentication cookie saved in AuthCookie.bin")
-                        else:
-                            print("\033[91m" + "Failed to retrieve auth cookie. Please check your credentials." + "\033[0m")
-                    else:
-                        print("\033[91m" + "Failed to retrieve user information. Please retry." + "\033[0m")
-                    
-                    return current_user  # Retourner l'objet utilisateur actuel
-                else:
-                    print("\033[91m" + "Failed to retrieve current user information." + "\033[0m")
-
-        except UnauthorizedException as e:
-            if e.status == 401:
-                print("\033[91m" + "Invalid username or password. Please retry." + "\033[0m")
-            elif e.status == 200 and ("Email 2 Factor Authentication" in e.reason or "2 Factor Authentication" in e.reason):
-                if "Email 2 Factor Authentication" in e.reason:
-                    auth_api.verify2_fa_email_code(two_factor_email_code=TwoFactorEmailCode(input("Email 2FA Code: ")))
-                elif "2 Factor Authentication" in e.reason:
-                    auth_api.verify2_fa(two_factor_auth_code=TwoFactorAuthCode(input("2FA Code: ")))
-            else:
-                print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
-        except vrchatapi.ApiException as e:
-            print("\033[91m" + "Failed to log in. Please retry." + "\033[0m")
-        except Exception as ex:
-            print("\033[91m" + f"Failed to log in. Please retry. Error: {ex}" + "\033[0m")
-
-    return None
+        except Exception as e:
+            print("Error during login:", str(e))
+            continue
 
 # LOGGER
 def download_entity_image(entity_id, entity_type):
