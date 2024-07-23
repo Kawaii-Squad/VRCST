@@ -33,3 +33,7 @@ We'd love to hear from you! If you encounter any issues or have suggestions for 
 Thank you for using VRC Scanner Tool!
 
 \- Kaichi-Sama
+
+## Important Notice
+
+This tool uses the public API of VRChat and does not violate the game's terms of use. What users do with the logged files afterward is not our responsibility. This tool is mainly designed to log images and IDs. Regarding force join and force clone, it is exactly the same as if you accessed the website without any external tools.
