@@ -1,26 +1,39 @@
-VRC Scanner Tool v2.2.0 (Beta) Release
-We're excited to announce the release of VRC Scanner Tool v2.2.0 (Beta)! This version introduces a more intuitive interface, better optimization, and a user-friendly GUI—all created by a passionate team of developers. This tool allows you to create and manage a local database for VRChat content, perfect for VRChat enthusiasts and creators who want to organize their content. Please note that this tool is solely for educational purposes, and we do not condone avatar or world theft.
+# 🚀 VRC Scanner Tool v2.2.0 (Beta)
 
-Installation Instructions
-Before you get started, follow these steps for a smooth installation:
+Welcome to **VRC Scanner Tool v2.2.0 (Beta)**! We're excited to roll out this new version with an intuitive GUI, better optimization, and smoother experience. Built by a passionate dev team, this tool helps you manage a local database for **VRChat** content—perfect for creators and enthusiasts. Please note: this tool is for **educational purposes only**. We do **not** condone avatar or world theft. 🙅‍♂️
 
-Step 1: Install Microsoft C++ Build Tools
-Ensure smooth tool operation by installing Microsoft Visual C++ Build Tools. Download and install it from this link.
+---
 
-Step 2: Install the 'VRC Scanner Tool' Package
-Download the 'VRC Scanner Tool' package from our GitHub releases page.
+## 🛠️ Installation Instructions
 
-Step 3: Run the Tool
-After installing the required tools and downloading the package, run the Run me as Admin.bat file. This will start the VRC Scanner Tool.
+Before diving into the tool, follow these steps to get everything running smoothly:
 
-Step 4: Enjoy!
-You're all set! Enjoy your local database created with VRC Scanner Tool. We hope you find it useful.
+### Step 1: Install Microsoft C++ Build Tools
+To ensure proper functioning, install **Microsoft Visual C++ Build Tools** from [this link](https://www.microsoft.com/store/productId/9NRWMJP3717K?ocid=pdpshare). This is essential!
 
-Support and Feedback
-We'd love to hear from you! If you encounter any issues or have suggestions for improvements, please don't hesitate to reach out. Your feedback is essential in making this tool better.
+### Step 2: Download VRC Scanner Tool
+Grab the latest version of the **VRC Scanner Tool** package from our [GitHub Releases](https://github.com/Kawaii-Squad/VRCST/releases/tag/VRCST).
 
-Team DEV:
-crystaldustie
-KaichiSama
-Freakipod
-Website: wait a fkg second lmao
+### Step 3: Run as Admin
+After installation, run `Run me as Admin.bat` to start the tool. It’s that simple!
+
+### Step 4: Enjoy the Experience
+You’re ready to explore! Build your local VRChat content database and organize your assets like a pro. 🎉
+
+---
+
+## 🛡️ Disclaimer
+
+This tool is **for educational purposes only**. We do not condone or support illegal activities, including avatar or world theft. Always respect creators' work.
+
+---
+
+## 💬 Support & Feedback
+
+We’d love to hear from you! Found an issue or have a feature request? Drop by our GitHub Issues page, or reach out to the team directly.
+
+---
+
+## 👨‍💻 Meet the Team
+
+**The awesome DEV team behind VRC Scanner Tool v2.2.0:**
