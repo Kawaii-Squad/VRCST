@@ -37,3 +37,9 @@ We’d love to hear from you! Found an issue or have a feature request? Drop by 
 ## 👨‍💻 Meet the Team
 
 **The awesome DEV team behind VRC Scanner Tool v2.2.0:**
+
+(FOR NOW)
+- 💻 crystaldustie
+- 💻 KaichiSama
+- 💻 Freakipod
+
