@@ -1,10 +1,13 @@
 pygame
 requests
 pyfiglet
-UnityPy
 keyboard
 vrchatapi
 colorama
 plyer
 python-osc
 rich
+UnityPy
+chardet
+Pillow
+pypresence
